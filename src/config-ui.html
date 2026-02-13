@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configurador - Analizador Licitaciones REGENERA</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #f0f4f8; color: #1e293b; }
+    .header { background: linear-gradient(135deg, #1e40af, #3b82f6); color: white; padding: 24px 32px; }
+    .header h1 { font-size: 22px; font-weight: 600; }
+    .header p { font-size: 13px; opacity: 0.85; margin-top: 4px; }
+    .tabs { display: flex; background: #1e3a8a; }
+    .tab { padding: 12px 24px; color: rgba(255,255,255,0.7); cursor: pointer; font-size: 14px; font-weight: 500; border-bottom: 3px solid transparent; transition: all 0.2s; }
+    .tab:hover { color: white; background: rgba(255,255,255,0.05); }
+    .tab.active { color: white; border-bottom-color: #60a5fa; background: rgba(255,255,255,0.1); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .container { max-width: 860px; margin: 24px auto; padding: 0 16px; }
+    .card { background: white; border-radius: 12px; padding: 24px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border: 1px solid #e2e8f0; }
+    .card h2 { font-size: 16px; font-weight: 600; color: #1e40af; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .card h2::before { content: ''; width: 4px; height: 20px; background: #3b82f6; border-radius: 2px; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 500; color: #475569; margin-bottom: 4px; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; transition: border-color 0.2s; font-family: inherit; }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-row-3 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; }
+    .btn { padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+    .btn-primary { background: #1e40af; color: white; }
+    .btn-primary:hover { background: #1e3a8a; }
+    .btn-secondary { background: #e2e8f0; color: #475569; }
+    .btn-secondary:hover { background: #cbd5e1; }
+    .btn-danger { background: #fee2e2; color: #dc2626; }
+    .btn-danger:hover { background: #fecaca; }
+    .btn-success { background: #dcfce7; color: #16a34a; }
+    .btn-success:hover { background: #bbf7d0; }
+    .btn-warning { background: #fef3c7; color: #92400e; }
+    .btn-warning:hover { background: #fde68a; }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+    .btn-group { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+    .status-bar { padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 13px; font-weight: 500; }
+    .status-ok { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+    .status-warn { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+    .recipients-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .recipient-tag { display: flex; align-items: center; gap: 4px; background: #e0e7ff; color: #3730a3; padding: 4px 10px; border-radius: 16px; font-size: 13px; }
+    .recipient-tag button { background: none; border: none; color: #6366f1; cursor: pointer; font-size: 16px; padding: 0 2px; }
+    .add-row { display: flex; gap: 8px; margin-top: 8px; }
+    .add-row input { flex: 1; }
+    .toast { position: fixed; top: 20px; right: 20px; padding: 14px 20px; border-radius: 10px; color: white; font-size: 14px; font-weight: 500; z-index: 100; transform: translateX(120%); transition: transform 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    .toast.show { transform: translateX(0); }
+    .toast.success { background: #16a34a; }
+    .toast.error { background: #dc2626; }
+    .info-text { font-size: 12px; color: #94a3b8; margin-top: 4px; }
+    .divider { border-top: 1px solid #e2e8f0; margin: 16px 0; }
+    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .stat-item { background: #f8fafc; padding: 12px; border-radius: 8px; text-align: center; }
+    .stat-value { font-size: 24px; font-weight: 700; color: #1e40af; }
+    .stat-label { font-size: 11px; color: #64748b; margin-top: 2px; }
+    .usage-bar-bg { background: #e2e8f0; border-radius: 8px; height: 28px; overflow: hidden; position: relative; }
+    .usage-bar-fill { height: 100%; border-radius: 8px; transition: width 0.5s ease; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: white; min-width: 40px; }
+    .usage-green { background: linear-gradient(90deg, #22c55e, #16a34a); }
+    .usage-yellow { background: linear-gradient(90deg, #eab308, #ca8a04); }
+    .usage-red { background: linear-gradient(90deg, #ef4444, #dc2626); }
+    .chart-container { display: flex; align-items: flex-end; gap: 3px; height: 80px; margin-top: 12px; padding: 0 4px; }
+    .chart-bar { flex: 1; background: #3b82f6; border-radius: 3px 3px 0 0; min-width: 8px; position: relative; transition: height 0.3s; }
+    .chart-bar:hover { background: #1e40af; }
+    .chart-bar .chart-tooltip { display: none; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 3px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; margin-bottom: 4px; }
+    .chart-bar:hover .chart-tooltip { display: block; }
+    .chart-labels { display: flex; gap: 3px; padding: 0 4px; margin-top: 4px; }
+    .chart-labels span { flex: 1; text-align: center; font-size: 9px; color: #94a3b8; }
+
+    /* Tabla de licitaciones */
+    .tender-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .tender-table th { background: #f1f5f9; padding: 10px 8px; text-align: left; font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0; position: sticky; top: 0; }
+    .tender-table td { padding: 10px 8px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+    .tender-table tr:hover { background: #f8fafc; }
+    .tender-table .budget { font-weight: 600; color: #1e40af; white-space: nowrap; }
+    .tender-table .province { white-space: nowrap; }
+    .tender-table .title-cell { max-width: 340px; }
+    .tender-table .title-cell a { color: #1e40af; text-decoration: none; }
+    .tender-table .title-cell a:hover { text-decoration: underline; }
+    .feedback-badge { display: inline-block; background: #fee2e2; color: #dc2626; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; }
+    .filter-bar { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 16px; }
+    .filter-bar .form-group { margin-bottom: 0; }
+    .table-scroll { max-height: 600px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; }
+    .pager { display:flex; align-items:center; justify-content:flex-end; gap:8px; margin-top:12px; }
+    .pager .btn { padding: 6px 10px; font-size: 12px; }
+    .pager-info { font-size: 12px; color:#64748b; margin-right:auto; }
+    .empty-state { text-align: center; padding: 40px; color: #94a3b8; }
+    .empty-state p { font-size: 14px; }
+
+    /* Modal */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: center; justify-content: center; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: white; border-radius: 12px; padding: 24px; max-width: 480px; width: 90%; box-shadow: 0 8px 30px rgba(0,0,0,0.2); }
+    .modal h3 { font-size: 16px; color: #1e40af; margin-bottom: 4px; }
+    .modal .modal-subtitle { font-size: 12px; color: #64748b; margin-bottom: 16px; }
+    .modal .btn-group { justify-content: flex-end; }
+    .card-header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+
+    /* Modal de ejecucion */
+    .run-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.7); z-index: 300; align-items: center; justify-content: center; }
+    .run-overlay.open { display: flex; }
+    .run-modal { background: white; border-radius: 12px; padding: 20px; width: min(900px, 92vw); max-height: 85vh; overflow: hidden; box-shadow: 0 10px 35px rgba(0,0,0,0.25); display: flex; flex-direction: column; gap: 12px; }
+    .run-header { display: flex; align-items: center; justify-content: space-between; }
+    .run-title { font-size: 16px; font-weight: 600; color: #1e40af; }
+    .run-status { font-size: 12px; color: #64748b; }
+    .run-body { display: grid; grid-template-columns: 1.3fr 1fr; gap: 12px; height: 60vh; }
+    .run-panel { border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; overflow: hidden; display: flex; flex-direction: column; }
+    .run-panel h4 { font-size: 12px; color: #475569; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .run-log { flex: 1; overflow: auto; font-size: 12px; background: #f8fafc; border-radius: 8px; padding: 8px; }
+    .run-log div { margin-bottom: 6px; color: #334155; }
+    .run-results { flex: 1; overflow: auto; }
+    .run-results .result-item { border-bottom: 1px solid #f1f5f9; padding: 8px 0; font-size: 12px; }
+    .run-results .result-item strong { color: #1e40af; }
+    .progress-wrap { display: flex; gap: 12px; align-items: center; }
+    .progress-bar { flex: 1; height: 10px; background: #e2e8f0; border-radius: 8px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, #3b82f6, #1e40af); width: 0%; transition: width 0.3s; }
+    .spinner { width: 18px; height: 18px; border: 3px solid #cbd5e1; border-top-color: #1e40af; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @media (max-width: 860px) {
+      .run-body { grid-template-columns: 1fr; height: 65vh; }
+    }
+
+    .suggest-form { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .suggest-form .form-group { margin-bottom: 0; }
+    .suggest-form .form-group.full { grid-column: 1 / -1; }
+    @media (max-width: 860px) {
+      .suggest-form { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Analizador de Licitaciones Publicas</h1>
+    <p>REGENERA - Panel de Configuracion y Consulta</p>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('config')">Configuracion</div>
+    <div class="tab" onclick="switchTab('tenders')">Licitaciones</div>
+  </div>
+
+  <!-- ==================== TAB: CONFIGURACION ==================== -->
+  <div id="tab-config" class="tab-content active">
+    <div class="container">
+      <div id="statusBar" class="status-bar status-warn">Cargando configuracion...</div>
+
+      <!-- DESTINATARIOS -->
+      <div class="card">
+        <h2>Destinatarios</h2>
+        <p class="info-text" style="margin-bottom:8px">Personas que recibiran el resumen diario de licitaciones</p>
+        <div id="recipientsList" class="recipients-list"></div>
+        <div class="add-row">
+          <input type="email" id="newRecipient" placeholder="nombre@empresa.com" onkeypress="if(event.key==='Enter')addRecipient()">
+          <button class="btn btn-secondary" onclick="addRecipient()">+ Anadir</button>
+        </div>
+      </div>
+
+      <!-- FILTROS -->
+      <div class="card">
+        <h2>Parametros de Filtrado</h2>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Ventana temporal (dias)</label>
+            <input type="number" id="windowDays" placeholder="10" min="1" max="90">
+            <p class="info-text">Solo licitaciones publicadas en los ultimos X dias</p>
+          </div>
+          <div class="form-group">
+            <label>Pausa entre llamadas API (segundos)</label>
+            <input type="number" id="apiPauseSeconds" placeholder="3" min="1" max="60">
+            <p class="info-text">Tiempo de espera entre cada analisis</p>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Presupuesto min. Murcia/Alicante (EUR)</label>
+            <input type="number" id="minBudgetLocal" placeholder="30000">
+          </div>
+          <div class="form-group">
+            <label>Presupuesto min. resto Espana (EUR)</label>
+            <input type="number" id="minBudgetNational" placeholder="1000000">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Provincias locales (presupuesto min. reducido)</label>
+          <input type="text" id="localProvinces" placeholder="Murcia, Alicante">
+          <p class="info-text">Separadas por comas. Se les aplicara el presupuesto minimo local</p>
+        </div>
+        <div class="divider"></div>
+        <div class="form-group">
+          <label>Palabras clave especiales</label>
+          <textarea id="specialKeywords" placeholder="energia&#10;instalaciones electricas&#10;climatizacion&#10;hidrogeno"></textarea>
+          <p class="info-text">Una por linea. Se buscan en titulo y resumen de licitaciones de organismos interesantes</p>
+        </div>
+        <div class="form-group">
+          <label>Organismos interesantes</label>
+          <textarea id="interestingAuthorities" placeholder="ADIF&#10;AUTORIDAD PORTUARIA DE BARCELONA&#10;EMT PALMA" style="min-height:100px"></textarea>
+          <p class="info-text">Uno por linea. Licitaciones de estos organismos se analizan si contienen las palabras clave</p>
+        </div>
+      </div>
+
+      <!-- PROGRAMACION -->
+      <div class="card">
+        <h2>Programacion de ejecucion</h2>
+        <div class="form-group">
+          <label><input type="checkbox" id="scheduleEnabled"> Activar programacion automatica</label>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Periodicidad</label>
+            <select id="schedulePeriodicity" onchange="toggleWeeklyDays()">
+              <option value="daily">Diario (todos los dias)</option>
+              <option value="weekdays">Laborables (Lun-Vie)</option>
+              <option value="weekly">Semanal (elige dias)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Horas (formato HH:MM)</label>
+            <input type="text" id="scheduleHours" placeholder="08:00, 14:00">
+            <p class="info-text">Separadas por comas. Ej: 08:00, 14:30</p>
+          </div>
+        </div>
+        <div class="form-group" id="weeklyDaysRow" style="display:none">
+          <label>Dias de la semana</label>
+          <div class="btn-group" style="gap:6px">
+            <label><input type="checkbox" class="weekDay" value="1"> Lun</label>
+            <label><input type="checkbox" class="weekDay" value="2"> Mar</label>
+            <label><input type="checkbox" class="weekDay" value="3"> Mie</label>
+            <label><input type="checkbox" class="weekDay" value="4"> Jue</label>
+            <label><input type="checkbox" class="weekDay" value="5"> Vie</label>
+            <label><input type="checkbox" class="weekDay" value="6"> Sab</label>
+            <label><input type="checkbox" class="weekDay" value="0"> Dom</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- USO API GEMINI -->
+      <div class="card">
+        <h2>Uso de API Gemini (hoy)</h2>
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:8px">
+          <div style="flex:1">
+            <div class="usage-bar-bg">
+              <div id="usageBarFill" class="usage-bar-fill usage-green" style="width:0%">0%</div>
+            </div>
+          </div>
+          <div style="text-align:right;min-width:100px">
+            <span id="usageToday" style="font-size:24px;font-weight:700;color:#1e40af">0</span>
+            <span style="font-size:14px;color:#64748b"> peticiones</span>
+          </div>
+        </div>
+        <div style="text-align:right;margin-top:4px">
+          <span style="font-size:12px;color:#64748b">Media 7 dias: </span>
+          <span id="usageAvg" style="font-size:13px;font-weight:600;color:#1e40af">0</span>
+          <span style="font-size:12px;color:#64748b"> pet/dia</span>
+        </div>
+        <div class="divider"></div>
+        <p style="font-size:12px;color:#64748b;margin-bottom:4px">Historial de uso (ultimos 14 dias)</p>
+        <div id="usageChart" class="chart-container"></div>
+        <div id="usageLabels" class="chart-labels"></div>
+      </div>
+
+      <!-- ACCIONES -->
+      <div class="card">
+        <h2>Acciones</h2>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="saveAll()">Guardar Configuracion</button>
+          <button class="btn btn-success" onclick="testEmail()">Enviar Email de Prueba</button>
+          <button class="btn btn-warning" onclick="startRun()">Ejecutar Analisis Ahora</button>
+          <button class="btn btn-danger" onclick="clearHist()">Limpiar Historial</button>
+        </div>
+        <div class="divider"></div>
+        <div class="stats">
+          <div class="stat-item">
+            <div class="stat-value" id="historyCount">-</div>
+            <div class="stat-label">Licitaciones en historial</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="recipientCount">0</div>
+            <div class="stat-label">Destinatarios configurados</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== TAB: LICITACIONES ==================== -->
+  <div id="tab-tenders" class="tab-content">
+    <div class="container">
+      <div class="card">
+        <div class="card-header">
+          <h2>Consultar Licitaciones</h2>
+          <button class="btn btn-secondary btn-sm" onclick="openSuggestModal()">Sugerir licitacion</button>
+        </div>
+        <p class="info-text" style="margin-bottom:16px">Busca licitaciones enviadas por email. Usa los filtros y pulsa "Buscar" para ver resultados.</p>
+
+        <div class="filter-bar">
+          <div class="form-group" style="min-width:150px">
+            <label>Fecha desde</label>
+            <input type="date" id="filterDateFrom">
+          </div>
+          <div class="form-group" style="min-width:150px">
+            <label>Fecha hasta</label>
+            <input type="date" id="filterDateTo">
+          </div>
+          <div class="form-group" style="min-width:180px;flex:1">
+            <label>ID / Expediente</label>
+            <input type="text" id="filterTenderId" placeholder="Buscar por ID...">
+          </div>
+          <button class="btn btn-primary" onclick="searchTenders()" style="height:38px">Buscar</button>
+        </div>
+      </div>
+
+      <div id="tendersResultCard" class="card" style="display:none">
+        <h2 id="tendersResultTitle">Resultados</h2>
+        <div id="tendersTableWrap"></div>
+        <div id="tendersPager" class="pager" style="display:none">
+          <div id="tendersPagerInfo" class="pager-info"></div>
+          <button class="btn btn-secondary btn-sm" onclick="prevTendersPage()">Anterior</button>
+          <button class="btn btn-secondary btn-sm" onclick="nextTendersPage()">Siguiente</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL FEEDBACK -->
+  <div id="feedbackModal" class="modal-overlay">
+    <div class="modal">
+      <h3>Marcar como falso positivo</h3>
+      <p class="modal-subtitle" id="feedbackTenderTitle"></p>
+      <input type="hidden" id="feedbackTenderId">
+      <div class="form-group">
+        <label>Motivo (por que no es correcta esta licitacion)</label>
+        <textarea id="feedbackReason" placeholder="Ej: No es del sector energia, es solo un suministro de material de oficina..."></textarea>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-secondary" onclick="closeFeedbackModal()">Cancelar</button>
+        <button class="btn btn-danger" onclick="submitFeedback()">Marcar como incorrecta</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL SUGERIR LICITACION -->
+  <div id="suggestModal" class="modal-overlay">
+    <div class="modal" style="max-width:720px">
+      <h3>Sugerir licitacion no encontrada</h3>
+      <p class="modal-subtitle">Completa los datos basicos para entrenar el modelo y mejorar el filtrado.</p>
+      <div class="suggest-form">
+        <div class="form-group">
+          <label>ID / Expediente *</label>
+          <input type="text" id="suggestId" placeholder="Ej: 2026/1234">
+        </div>
+        <div class="form-group">
+          <label>Presupuesto (EUR)</label>
+          <input type="number" id="suggestBudget" placeholder="100000">
+        </div>
+        <div class="form-group full">
+          <label>Titulo *</label>
+          <input type="text" id="suggestTitle" placeholder="Titulo de la licitacion">
+        </div>
+        <div class="form-group">
+          <label>Organismo</label>
+          <input type="text" id="suggestAuthority" placeholder="Organismo de contratacion">
+        </div>
+        <div class="form-group">
+          <label>Provincia</label>
+          <input type="text" id="suggestProvince" placeholder="Provincia de ejecucion">
+        </div>
+        <div class="form-group">
+          <label>Fecha publicacion</label>
+          <input type="date" id="suggestDate">
+        </div>
+        <div class="form-group">
+          <label>Enlace</label>
+          <input type="url" id="suggestLink" placeholder="https://...">
+        </div>
+        <div class="form-group full">
+          <label>Motivo / Comentarios</label>
+          <textarea id="suggestReason" placeholder="Por que crees que deberia haberse encontrado..."></textarea>
+        </div>
+      </div>
+      <div class="btn-group" style="margin-top:12px">
+        <button class="btn btn-secondary" onclick="closeSuggestModal()">Cancelar</button>
+        <button class="btn btn-primary" onclick="submitSuggestion()">Enviar sugerencia</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL EJECUCION -->
+  <div id="runModal" class="run-overlay">
+    <div class="run-modal">
+      <div class="run-header">
+        <div>
+          <div class="run-title">Ejecucion en curso</div>
+          <div id="runSubtitle" class="run-status">Iniciando...</div>
+        </div>
+        <div class="btn-group" style="margin:0">
+          <button class="btn btn-secondary btn-sm" onclick="closeRunModal()">Cerrar</button>
+        </div>
+      </div>
+      <div class="progress-wrap">
+        <div class="spinner" id="runSpinner"></div>
+        <div class="progress-bar"><div id="runProgressFill" class="progress-fill"></div></div>
+        <div id="runProgressLabel" style="min-width:90px;font-size:12px;color:#64748b">0/0</div>
+      </div>
+      <div class="run-body">
+        <div class="run-panel">
+          <h4>Logs</h4>
+          <div id="runLogs" class="run-log"></div>
+        </div>
+        <div class="run-panel">
+          <h4>Resultados</h4>
+          <div id="runResults" class="run-results"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    let recipients = [];
+
+    // ==================== TABS ====================
+    function switchTab(tab) {
+      document.querySelectorAll('.tab').forEach((t, i) => {
+        t.classList.toggle('active', (tab === 'config' && i === 0) || (tab === 'tenders' && i === 1));
+      });
+      document.getElementById('tab-config').classList.toggle('active', tab === 'config');
+      document.getElementById('tab-tenders').classList.toggle('active', tab === 'tenders');
+    }
+
+    // ==================== TOAST ====================
+    function showToast(msg, type = 'success') {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = `toast ${type} show`;
+      setTimeout(() => t.classList.remove('show'), 4000);
+    }
+
+    // ==================== RECIPIENTS ====================
+    function renderRecipients() {
+      const list = document.getElementById('recipientsList');
+      list.innerHTML = recipients.map((r, i) =>
+        `<span class="recipient-tag">${r}<button onclick="removeRecipient(${i})">&times;</button></span>`
+      ).join('');
+      document.getElementById('recipientCount').textContent = recipients.length;
+    }
+
+    function addRecipient() {
+      const input = document.getElementById('newRecipient');
+      const email = input.value.trim();
+      if (!email || !email.includes('@')) return showToast('Email no valido', 'error');
+      if (recipients.includes(email)) return showToast('Ya existe', 'error');
+      recipients.push(email);
+      input.value = '';
+      renderRecipients();
+    }
+
+    function removeRecipient(i) {
+      recipients.splice(i, 1);
+      renderRecipients();
+    }
+
+    // ==================== CONFIG LOAD/SAVE ====================
+    async function loadAll() {
+      try {
+        const res = await fetch('/api/config');
+        const config = await res.json();
+
+        document.getElementById('windowDays').value = config.filters?.windowDays || 10;
+        document.getElementById('minBudgetLocal').value = config.filters?.minBudgetLocal || 30000;
+        document.getElementById('minBudgetNational').value = config.filters?.minBudgetNational || 1000000;
+        document.getElementById('apiPauseSeconds').value = config.filters?.apiPauseSeconds || 3;
+        document.getElementById('localProvinces').value = (config.filters?.localProvinces || ['Murcia', 'Alicante']).join(', ');
+        const defaultKeywords = ['energia', 'instalaciones electricas', 'climatizacion', 'hidrogeno', 'eficiencia energetica', 'fotovoltaica'];
+        const defaultAuthorities = [
+          'DIRECCION GENERAL DE CARRETERAS', 'ADIF', 'AUTORIDAD PORTUARIA DE BARCELONA',
+          'AUTORIDAD PORTUARIA DE MALAGA', 'AUTORIDAD PORTUARIA DE CARTAGENA',
+          'AUTORIDAD PORTUARIA DE VIGO', 'Consejeria Fomento Murcia',
+          'Empresa Municipal de Transportes de Madrid', 'MCT', 'ICA', 'SEIASA', 'CHS',
+          'EMUASA', 'UMH', 'Aadif', 'Intendente de Cartagena', 'EMT PALMA',
+          'AYUNTAMIENTO DE CARTAGENA'
+        ];
+        document.getElementById('specialKeywords').value = (config.filters?.specialKeywords?.length > 0 ? config.filters.specialKeywords : defaultKeywords).join('\n');
+        document.getElementById('interestingAuthorities').value = (config.filters?.interestingAuthorities?.length > 0 ? config.filters.interestingAuthorities : defaultAuthorities).join('\n');
+
+        recipients = config.emailConfig?.recipients || [];
+        renderRecipients();
+
+        document.getElementById('historyCount').textContent = config._historyCount || 0;
+
+        const schedule = config.schedule || {};
+        document.getElementById('scheduleEnabled').checked = schedule.enabled !== false;
+        document.getElementById('schedulePeriodicity').value = schedule.periodicity || 'daily';
+        document.getElementById('scheduleHours').value = Array.isArray(schedule.hours) ? schedule.hours.join(', ') : '08:00';
+        const days = Array.isArray(schedule.daysOfWeek) ? schedule.daysOfWeek.map(String) : [];
+        document.querySelectorAll('.weekDay').forEach(cb => cb.checked = days.includes(cb.value));
+        toggleWeeklyDays();
+
+        const bar = document.getElementById('statusBar');
+        if (config._isConfigured) {
+          bar.className = 'status-bar status-ok';
+          bar.textContent = 'Configuracion completa - Listo para ejecutar';
+        } else {
+          bar.className = 'status-bar status-warn';
+          bar.textContent = 'Configuracion incompleta - Rellena todos los campos obligatorios';
+        }
+      } catch (e) {
+        showToast('Error cargando configuracion', 'error');
+      }
+    }
+
+    async function saveAll() {
+      const hoursRaw = document.getElementById('scheduleHours').value;
+      const hours = parseHoursInput(hoursRaw);
+      if (hours.length === 0) {
+        showToast('Horas invalidas. Usa formato HH:MM', 'error');
+        return;
+      }
+      const days = Array.from(document.querySelectorAll('.weekDay'))
+        .filter(cb => cb.checked)
+        .map(cb => parseInt(cb.value));
+
+      const config = {
+        emailConfig: {
+          recipients: recipients,
+        },
+        schedule: {
+          enabled: document.getElementById('scheduleEnabled').checked,
+          periodicity: document.getElementById('schedulePeriodicity').value,
+          hours,
+          daysOfWeek: days.length > 0 ? days : [1,2,3,4,5],
+        },
+        filters: {
+          windowDays: parseInt(document.getElementById('windowDays').value) || 10,
+          minBudgetLocal: parseInt(document.getElementById('minBudgetLocal').value) || 30000,
+          minBudgetNational: parseInt(document.getElementById('minBudgetNational').value) || 1000000,
+          apiPauseSeconds: parseInt(document.getElementById('apiPauseSeconds').value) || 3,
+          localProvinces: document.getElementById('localProvinces').value.split(',').map(s => s.trim()).filter(Boolean),
+          specialKeywords: document.getElementById('specialKeywords').value.split('\n').map(s => s.trim()).filter(Boolean),
+          interestingAuthorities: document.getElementById('interestingAuthorities').value.split('\n').map(s => s.trim()).filter(Boolean),
+        }
+      };
+
+      try {
+        const res = await fetch('/api/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(config)
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Configuracion guardada correctamente');
+          loadAll();
+        } else {
+          showToast(data.message, 'error');
+        }
+      } catch (e) {
+        showToast('Error guardando', 'error');
+      }
+    }
+
+    async function testEmail() {
+      showToast('Enviando email de prueba...', 'success');
+      try {
+        const res = await fetch('/api/test-email', { method: 'POST' });
+        const data = await res.json();
+        showToast(data.message, data.success ? 'success' : 'error');
+      } catch (e) {
+        showToast('Error de conexion', 'error');
+      }
+    }
+
+    async function clearHist() {
+      if (!confirm('Limpiar historial? Las licitaciones ya enviadas seguiran bloqueadas por el historico de resultados.')) return;
+      try {
+        const res = await fetch('/api/clear-history', { method: 'POST' });
+        const data = await res.json();
+        showToast(data.message);
+        loadAll();
+      } catch (e) {
+        showToast('Error limpiando historial', 'error');
+      }
+    }
+
+    // ==================== USAGE ====================
+    async function loadUsage() {
+      try {
+        const res = await fetch('/api/usage');
+        const u = await res.json();
+
+        const pct = Math.min(u.percentage, 100);
+        const bar = document.getElementById('usageBarFill');
+        bar.style.width = Math.max(pct, 3) + '%';
+        bar.textContent = pct + '%';
+        bar.className = 'usage-bar-fill ' + (pct < 60 ? 'usage-green' : pct < 85 ? 'usage-yellow' : 'usage-red');
+
+        document.getElementById('usageToday').textContent = u.today.toLocaleString('es-ES');
+        document.getElementById('usageAvg').textContent = u.avgLast7.toLocaleString('es-ES');
+
+        const maxCalls = Math.max(...u.history.map(h => h.calls), 1);
+        const chart = document.getElementById('usageChart');
+        const labels = document.getElementById('usageLabels');
+        chart.innerHTML = u.history.map(h => {
+          const height = Math.max((h.calls / maxCalls) * 100, 2);
+          const day = h.date.slice(8, 10) + '/' + h.date.slice(5, 7);
+          return `<div class="chart-bar" style="height:${height}%"><span class="chart-tooltip">${day}: ${h.calls} pet.</span></div>`;
+        }).join('');
+        labels.innerHTML = u.history.map((h, i) => {
+          const day = h.date.slice(8, 10);
+          return i % 2 === 0 ? `<span>${day}</span>` : '<span></span>';
+        }).join('');
+      } catch (e) {}
+    }
+
+    // ==================== LICITACIONES ====================
+    let tendersCache = [];
+    let tendersPage = 1;
+    const tendersPageSize = 10;
+
+    async function searchTenders() {
+      const dateFrom = document.getElementById('filterDateFrom').value;
+      const dateTo = document.getElementById('filterDateTo').value;
+      const tenderId = document.getElementById('filterTenderId').value.trim();
+
+      if (!dateFrom && !dateTo && !tenderId) {
+        showToast('Introduce al menos un filtro (fecha o ID)', 'error');
+        return;
+      }
+
+      const params = new URLSearchParams();
+      if (dateFrom) params.set('dateFrom', dateFrom);
+      if (dateTo) params.set('dateTo', dateTo);
+      if (tenderId) params.set('tenderId', tenderId);
+
+      try {
+        const res = await fetch('/api/tenders?' + params.toString());
+        const data = await res.json();
+
+        const card = document.getElementById('tendersResultCard');
+        card.style.display = 'block';
+        document.getElementById('tendersResultTitle').textContent = `Resultados (${data.total} licitaciones)`;
+
+        if (data.total === 0) {
+          document.getElementById('tendersTableWrap').innerHTML = `
+            <div class="empty-state">
+              <p>No se encontraron licitaciones con esos filtros.</p>
+              <p style="margin-top:8px;font-size:12px">Las licitaciones aparecen aqui tras una ejecucion real (no en modo test).</p>
+            </div>`;
+          document.getElementById('tendersPager').style.display = 'none';
+          return;
+        }
+
+        tendersCache = data.tenders || [];
+        tendersPage = 1;
+        renderTendersPage();
+      } catch (e) {
+        showToast('Error buscando licitaciones', 'error');
+      }
+    }
+
+    function renderTendersPage() {
+      const total = tendersCache.length;
+      const totalPages = Math.max(1, Math.ceil(total / tendersPageSize));
+      tendersPage = Math.min(Math.max(1, tendersPage), totalPages);
+      const start = (tendersPage - 1) * tendersPageSize;
+      const slice = tendersCache.slice(start, start + tendersPageSize);
+
+      let html = '<div class="table-scroll"><table class="tender-table"><thead><tr>';
+      html += '<th>ID</th><th class="title-cell">Titulo</th><th>Organismo</th><th>Provincia</th><th class="budget">Presupuesto</th><th>Fecha</th><th>Estado</th><th>Acciones</th>';
+      html += '</tr></thead><tbody>';
+
+      for (const t of slice) {
+        const budgetFmt = t.budget ? t.budget.toLocaleString('es-ES', { maximumFractionDigits: 0 }) + ' EUR' : '-';
+        const feedbackHtml = t.feedback
+          ? `<span class="feedback-badge" title="${esc(t.feedback.reason)}">Falso positivo</span>`
+          : `<button class="btn btn-warning btn-sm" onclick="openFeedbackModal('${esc(t.id)}', '${esc(t.title)}')">Marcar incorrecta</button>`;
+
+        html += `<tr${t.feedback ? ' style="opacity:0.6"' : ''}>`;
+        html += `<td style="font-family:monospace;font-size:11px;white-space:nowrap">${esc(t.id)}</td>`;
+        html += `<td class="title-cell">${t.link ? `<a href="${esc(t.link)}" target="_blank">${esc(t.title)}</a>` : esc(t.title)}</td>`;
+        html += `<td>${esc(t.contractingAuthority || '-')}</td>`;
+        html += `<td class="province">${esc(t.province || '-')}</td>`;
+        html += `<td class="budget">${budgetFmt}</td>`;
+        html += `<td style="white-space:nowrap">${esc(t.publicationDate || '-')}</td>`;
+        html += `<td>${feedbackHtml}</td>`;
+        html += `<td><button class="btn btn-danger btn-sm" onclick="removeTender('${esc(t.id)}')">Eliminar licitacion</button></td></tr>`;
+      }
+
+      html += '</tbody></table></div>';
+      document.getElementById('tendersTableWrap').innerHTML = html;
+
+      const pager = document.getElementById('tendersPager');
+      pager.style.display = total > 0 ? 'flex' : 'none';
+      document.getElementById('tendersPagerInfo').textContent = `Pagina ${tendersPage} de ${totalPages} | ${total} total`;
+    }
+
+    function nextTendersPage() {
+      tendersPage++;
+      renderTendersPage();
+    }
+
+    function prevTendersPage() {
+      tendersPage--;
+      renderTendersPage();
+    }
+
+    function esc(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    // ==================== FEEDBACK MODAL ====================
+    function openFeedbackModal(id, title) {
+      document.getElementById('feedbackTenderId').value = id;
+      document.getElementById('feedbackTenderTitle').textContent = id + ' - ' + title;
+      document.getElementById('feedbackReason').value = '';
+      document.getElementById('feedbackModal').classList.add('open');
+    }
+
+    function closeFeedbackModal() {
+      document.getElementById('feedbackModal').classList.remove('open');
+    }
+
+    async function submitFeedback() {
+      const tenderId = document.getElementById('feedbackTenderId').value;
+      const reason = document.getElementById('feedbackReason').value.trim();
+      if (!reason) {
+        showToast('Escribe un motivo', 'error');
+        return;
+      }
+      try {
+        const res = await fetch('/api/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tenderId, reason })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Feedback guardado - esta licitacion se marcara como incorrecta');
+          closeFeedbackModal();
+          searchTenders();
+        } else {
+          showToast(data.message, 'error');
+        }
+      } catch (e) {
+        showToast('Error guardando feedback', 'error');
+      }
+    }
+
+    // ==================== SUGERIR LICITACION ====================
+    async function submitSuggestion() {
+      const id = document.getElementById('suggestId').value.trim();
+      const title = document.getElementById('suggestTitle').value.trim();
+      if (!id || !title) {
+        showToast('ID y titulo son obligatorios', 'error');
+        return;
+      }
+      const payload = {
+        id,
+        title,
+        contractingAuthority: document.getElementById('suggestAuthority').value.trim(),
+        province: document.getElementById('suggestProvince').value.trim(),
+        budget: document.getElementById('suggestBudget').value,
+        publicationDate: document.getElementById('suggestDate').value,
+        link: document.getElementById('suggestLink').value.trim(),
+        reason: document.getElementById('suggestReason').value.trim(),
+      };
+      try {
+        const res = await fetch('/api/suggest-tender', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Sugerencia enviada');
+          document.getElementById('suggestId').value = '';
+          document.getElementById('suggestTitle').value = '';
+          document.getElementById('suggestAuthority').value = '';
+          document.getElementById('suggestProvince').value = '';
+          document.getElementById('suggestBudget').value = '';
+          document.getElementById('suggestDate').value = '';
+          document.getElementById('suggestLink').value = '';
+          document.getElementById('suggestReason').value = '';
+          closeSuggestModal();
+        } else {
+          showToast(data.message || 'Error guardando sugerencia', 'error');
+        }
+      } catch (e) {
+        showToast('Error enviando sugerencia', 'error');
+      }
+    }
+
+    function openSuggestModal() {
+      document.getElementById('suggestModal').classList.add('open');
+    }
+
+    function closeSuggestModal() {
+      document.getElementById('suggestModal').classList.remove('open');
+    }
+
+    // ==================== ELIMINAR LICITACION ====================
+    async function removeTender(tenderId) {
+      if (!confirm('Confirmar eliminacion: se quitara del historico y podra volver a salir. ¿Eliminar?')) return;
+      try {
+        const res = await fetch('/api/remove-tender', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tenderId })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Licitacion eliminada del historico');
+          tendersCache = tendersCache.filter(t => t.id !== tenderId);
+          renderTendersPage();
+          loadAll();
+        } else {
+          showToast(data.message || 'Error eliminando', 'error');
+        }
+      } catch (e) {
+        showToast('Error eliminando licitacion', 'error');
+      }
+    }
+
+    // ==================== PROGRAMACION ====================
+    function toggleWeeklyDays() {
+      const periodicity = document.getElementById('schedulePeriodicity').value;
+      document.getElementById('weeklyDaysRow').style.display = periodicity === 'weekly' ? 'block' : 'none';
+    }
+
+    function parseHoursInput(input) {
+      return (input || '')
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean)
+        .filter(h => {
+          if (!/^\d{2}:\d{2}$/.test(h)) return false;
+          const [hh, mm] = h.split(':').map(Number);
+          return hh >= 0 && hh <= 23 && mm >= 0 && mm <= 59;
+        });
+    }
+
+    // ==================== EJECUCION MANUAL ====================
+    let runPoller = null;
+
+    function openRunModal() {
+      document.getElementById('runModal').classList.add('open');
+      document.getElementById('runLogs').innerHTML = '';
+      document.getElementById('runResults').innerHTML = '';
+      document.getElementById('runProgressFill').style.width = '0%';
+      document.getElementById('runProgressLabel').textContent = '0/0';
+      document.getElementById('runSpinner').style.display = 'block';
+    }
+
+    function closeRunModal() {
+      document.getElementById('runModal').classList.remove('open');
+      if (runPoller) {
+        clearInterval(runPoller);
+        runPoller = null;
+      }
+    }
+
+    async function startRun() {
+      try {
+        const res = await fetch('/api/run', { method: 'POST' });
+        const data = await res.json();
+        if (!data.success) return showToast(data.message || 'No se pudo iniciar', 'error');
+        openRunModal();
+        pollRunStatus();
+        if (!runPoller) runPoller = setInterval(pollRunStatus, 2000);
+      } catch (e) {
+        showToast('Error iniciando ejecucion', 'error');
+      }
+    }
+
+    async function pollRunStatus() {
+      try {
+        const res = await fetch('/api/run-status');
+        const status = await res.json();
+        renderRunStatus(status);
+        if (status.status === 'completed' || status.status === 'error') {
+          if (runPoller) {
+            clearInterval(runPoller);
+            runPoller = null;
+          }
+        }
+      } catch {}
+    }
+
+    function renderRunStatus(status) {
+      const subtitle = document.getElementById('runSubtitle');
+      const spinner = document.getElementById('runSpinner');
+      subtitle.textContent = status.step?.label || (status.status === 'running' ? 'Procesando...' : 'Finalizado');
+
+      if (status.status === 'running') spinner.style.display = 'block';
+      else spinner.style.display = 'none';
+
+      if (status.progress?.total) {
+        const pct = Math.min(100, Math.round((status.progress.current / status.progress.total) * 100));
+        document.getElementById('runProgressFill').style.width = pct + '%';
+        document.getElementById('runProgressLabel').textContent = `${status.progress.current}/${status.progress.total}`;
+      }
+
+      const logs = status.logs || [];
+      document.getElementById('runLogs').innerHTML = logs.slice(-80).map(l => `<div>${esc(l.msg)}</div>`).join('');
+
+      const results = status.tenders || [];
+      document.getElementById('runResults').innerHTML = results.map(t => `
+        <div class="result-item">
+          <strong>${esc(t.title || '-')}</strong><br>
+          ${esc(t.contractingAuthority || '-')} | ${esc(t.province || '-')} | ${t.budget ? t.budget.toLocaleString('es-ES') + ' EUR' : '-'}
+        </div>
+      `).join('') || '<div style="color:#94a3b8;font-size:12px">Sin resultados todavia.</div>';
+    }
+
+    // ==================== INIT ====================
+    loadAll();
+    loadUsage();
+  </script>
+</body>
+</html>

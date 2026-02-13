@@ -1,0 +1,39 @@
+{
+  "geminiApiKey": "TU_API_KEY_GEMINI",
+  "emailConfig": {
+    "provider": "Graph",
+    "smtp": {
+      "host": "smtp.office365.com",
+      "port": 587,
+      "secure": false,
+      "user": "tu-email@empresa.com",
+      "password": "TU_PASSWORD"
+    },
+    "from": "tu-email@empresa.com",
+    "recipients": [
+      "destino@empresa.com"
+    ]
+  },
+  "graphEmail": {
+    "tenantId": "TU_TENANT_ID",
+    "clientId": "TU_CLIENT_ID",
+    "clientSecret": "TU_CLIENT_SECRET",
+    "fromUser": "tu-email@empresa.com",
+    "saveToSentItems": true
+  },
+  "schedule": {
+    "enabled": true,
+    "periodicity": "daily",
+    "hours": ["08:00"],
+    "daysOfWeek": [1, 2, 3, 4, 5]
+  },
+  "filters": {
+    "windowDays": 10,
+    "minBudgetLocal": 30000,
+    "minBudgetNational": 1000000,
+    "apiPauseSeconds": 3,
+    "localProvinces": ["Murcia", "Alicante"],
+    "specialKeywords": ["energia", "instalaciones electricas", "climatizacion"],
+    "interestingAuthorities": ["ADIF", "AUTORIDAD PORTUARIA DE BARCELONA"]
+  }
+}

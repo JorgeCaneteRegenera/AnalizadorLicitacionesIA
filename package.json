@@ -1,0 +1,18 @@
+{
+  "name": "analizador-licitaciones-ia",
+  "version": "1.0.0",
+  "description": "Analizador automatizado de licitaciones publicas - Azure Functions",
+  "type": "module",
+  "main": "src/functions/*.js",
+  "scripts": {
+    "start": "func start",
+    "test": "echo \"No tests yet...\""
+  },
+  "dependencies": {
+    "@azure/functions": "^4.0.0",
+    "@google/genai": "^1.29.1",
+    "jszip": "^3.10.1",
+    "nodemailer": "^6.9.0",
+    "express": "^4.18.0"
+  }
+}
